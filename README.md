@@ -7,3 +7,26 @@
 * reading mappings
 * source map aware string replace for existing mapping
 * concat maps (optimized for best performance)
+
+
+### Installation
+Install using composer:
+
+    composer require koala-framework/sourcemaps
+
+### Example Usage
+
+    //read
+    $map = new Kwf_SourceMaps_SourceMap($mapContents, $minimiedFileContents);
+    $map->getMappings()
+
+    //create new map
+    $map = Kwf_SourceMaps_SourceMap::createEmptyMap($minimiedFileContents);
+    $map->addMapping(2, 3, 10, 12, 'foo.js'); //$generatedLine, $generatedColumn, $originalLine, $originalColumn, $originalSource, $originalName = null)
+    $map->getMapContents();
+
+    //merge two maps
+    $map1->concat($map2);
+
+    //perform string replacement
+    $map->stringReplace('foo', 'bar');
