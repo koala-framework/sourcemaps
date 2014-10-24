@@ -1,4 +1,9 @@
 <?php
+/**
+ * Various Sourcemaps Utilities
+ *
+ * An instance of this class represents a source map plus the minimied file
+ */
 class Kwf_SourceMaps_SourceMap
 {
     protected $_map;
@@ -6,6 +11,10 @@ class Kwf_SourceMaps_SourceMap
     protected $_mappings;
     protected $_mappingsChanged = false; //set to true if _mappings changed and _map['mappings'] is outdated
 
+    /**
+     * @param string contents of the source map
+     * @param string contents of the minified file
+     */
     public function __construct($mapContents, $fileContents)
     {
         if (is_string($mapContents)) {
@@ -25,6 +34,11 @@ class Kwf_SourceMaps_SourceMap
         $this->_file = $fileContents;
     }
 
+    /**
+     * Create a new, empty sourcemap
+     *
+     * @param string contents of the minified file
+     */
     public static function createEmptyMap($fileContents)
     {
         $map = (object)array(
@@ -45,7 +59,7 @@ class Kwf_SourceMaps_SourceMap
      * @param integer $originalColumn The column number in original file
      * @param string $sourceFile The original source file
      */
-    public function addMapping($generatedLine, $generatedColumn, $originalLine, $originalColumn, $originalSource)
+    public function addMapping($generatedLine, $generatedColumn, $originalLine, $originalColumn, $originalSource, $originalName = null)
     {
         if (!isset($this->_mappings)) $this->getMappings();
         $this->_mappings[] = array(
@@ -53,7 +67,8 @@ class Kwf_SourceMaps_SourceMap
             'generatedColumn' => $generatedColumn,
             'originalLine' => $originalLine,
             'originalColumn' => $originalColumn,
-            'originalSource' => $originalSource
+            'originalSource' => $originalSource,
+            'originalName' => $originalName,
         );
         $this->_mappingsChanged = true;
     }
@@ -69,18 +84,26 @@ class Kwf_SourceMaps_SourceMap
      */
     private function _generateMappings()
     {
-        if (!isset($this->_mappings) && $this->_map['mappings']) {
-            return $this->_map['mappings'];
+        if (!isset($this->_mappings) && $this->_map->mappings) {
+            //up to date, nothing to do
+            return;
         }
         $this->_mappingsChanged = false;
         if (!count($this->_mappings)) {
             return '';
         }
 
-        $this->_map['sources'] = array();
+        $this->_map->sources = array();
         foreach($this->_mappings as $m) {
-            if ($m['originalSource'] && !in_array($m['originalSource'], $this->_map['sources'])) {
-                $this->_map['sources'][] = $m['originalSource'];
+            if ($m['originalSource'] && !in_array($m['originalSource'], $this->_map->sources)) {
+                $this->_map->sources[] = $m['originalSource'];
+            }
+        }
+
+        $this->_map->names = array();
+        foreach($this->_mappings as $m) {
+            if ($m['originalName'] && !in_array($m['originalName'], $this->_map->names)) {
+                $this->_map->names[] = $m['originalName'];
             }
         }
 
@@ -91,7 +114,7 @@ class Kwf_SourceMaps_SourceMap
         }
         ksort($groupedMap);
 
-        $lastGeneratedLine = $lastOriginalIndex = $lastOriginalLine = $lastOriginalColumn = 0;
+        $lastGeneratedLine = $lastOriginalSourceIndex = $lastOriginalNameIndex = $lastOriginalLine = $lastOriginalColumn = 0;
 
         foreach($groupedMap as $lineNumber => $lineMap) {
             while(++$lastGeneratedLine < $lineNumber){
@@ -107,9 +130,9 @@ class Kwf_SourceMaps_SourceMap
 
                 // find the index
                 if ($m['originalSource']) {
-                    $index = array_search($m['originalSource'], $this->_map['sources']);
-                    $mapEncoded .= Kwf_SourceMaps_Base64VLQ::encode($index - $lastOriginalIndex);
-                    $lastOriginalIndex = $index;
+                    $index = array_search($m['originalSource'], $this->_map->sources);
+                    $mapEncoded .= Kwf_SourceMaps_Base64VLQ::encode($index - $lastOriginalSourceIndex);
+                    $lastOriginalSourceIndex = $index;
 
                     // lines are stored 0-based in SourceMap spec version 3
                     $mapEncoded .= Kwf_SourceMaps_Base64VLQ::encode($m['originalLine'] - 1 - $lastOriginalLine);
@@ -117,6 +140,12 @@ class Kwf_SourceMaps_SourceMap
 
                     $mapEncoded .= Kwf_SourceMaps_Base64VLQ::encode($m['originalColumn'] - $lastOriginalColumn);
                     $lastOriginalColumn = $m['originalColumn'];
+
+                    if ($m['originalName']) {
+                        $index = array_search($m['originalName'], $this->_map->names);
+                        $mapEncoded .= Kwf_SourceMaps_Base64VLQ::encode($index - $lastOriginalNameIndex);
+                        $lastOriginalNameIndex = $index;
+                    }
                 }
 
                 $lineMapEncoded[] = $mapEncoded;
@@ -125,9 +154,15 @@ class Kwf_SourceMaps_SourceMap
             $groupedMapEncoded[] = implode(',', $lineMapEncoded) . ';';
         }
 
-        return rtrim(implode($groupedMapEncoded), ';');
+        $this->_map->mappings = rtrim(implode($groupedMapEncoded), ';');
     }
 
+    /**
+     * Performant Source Map aware string replace
+     *
+     * @param string
+     * @param string
+     */
     public function stringReplace($string, $replace)
     {
         if ($this->_mappingsChanged) $this->_generateMappings();
@@ -201,6 +236,11 @@ class Kwf_SourceMaps_SourceMap
         unset($this->_mappings); //force re-parse
     }
 
+    /**
+     * Return all mappings
+     *
+     * @return array with assoc array containing: generatedLine, generatedColumn, originalSource, originalLine, originalColumn, name
+     */
     public function getMappings()
     {
         if (isset($this->_mappings)) {
@@ -340,86 +380,76 @@ class Kwf_SourceMaps_SourceMap
         );
     }
 
+    /**
+     * Concat sourcemaps and keep mappings intact
+     *
+     * This is implemented very efficent by avoiding to parse the whole mappings string.
+     */
     public function concat(Kwf_SourceMaps_SourceMap $other)
     {
-        $retSources = '';
-        $retNames = '';
-        $retMappings = '';
-        $previousFileLast = false;
-        $previousFileSourcesCount = 0;
-        $previousFileNamesCount = 0;
+        $this->_mappingsChanged = true;
 
-
-        $c = $i->getContentsPackedSourceMap($language);
-        if (!$c) {
-            $packageContents = $i->getContentsPacked($language);
-            $sources = array();
-            if ($i instanceof Kwf_Assets_Dependency_File) {
-                $sources[] = $i->getFileNameWithType();
-            } else {
-                $sources[] = 'dynamic/'.get_class($i).'-'.uniqid();
-            }
-            $data = array(
-                "version" => 3,
-                //"file" => ,
-                        "sources"=> $sources,
-                "names"=> array(),
-                "mappings" => 'AAAAA'.str_repeat(';', substr_count($packageContents, "\n")),
-                '_x_org_koala-framework_last' => array(
-                    'source' => 0,
-                    'originalLine' => 0,
-                    'originalColumn' => 0,
-                    'name' => 0,
-                )
+        $data = $other->getMapContentsData();
+        if (!$data->mappings) {
+            $fileContents = $other->_file;
+            $this->_file .= "\n".$other->_file;
+            $data->mappings = 'AAAAA'.str_repeat(';', substr_count($other->_file, "\n"));
+            $data->{'_x_org_koala-framework_last'} = array(
+                'source' => 0,
+                'originalLine' => 0,
+                'originalColumn' => 0,
+                'name' => 0,
             );
-        } else {
-            $data = json_decode($c, true);
-            if (!$data) {
-                throw new Kwf_Exception("Invalid source map for '$i', json invalid: '$c'");
-            }
-        }
-        if (!isset($data['_x_org_koala-framework_last'])) {
-            throw new Kwf_Exception("source map for '$i' doesn't contain _x_org_koala-framework_last extension");
         }
 
-        foreach ($data['sources'] as &$s) {
-            $s = '/assets/'.$s;
+        if (!isset($this->_map->{'_x_org_koala-framework_last'})) {
+            $this->_addLastExtension();
         }
-        if ($data['sources']) {
-            $retSources .= ($retSources ? ',' : '').substr(json_encode($data['sources']), 1, -1);
+        $previousFileLast = $this->_map->{'_x_org_koala-framework_last'};
+        $previousFileSourcesCount = count($this->_map->sources);
+        $previousFileNamesCount = count($this->_map->names);
+        $otherMappings = '';
+
+        if ($data->sources) {
+            //$this->_map->sources .= ($this->_map->sources ? ',' : '').substr(json_encode($data->sources), 1, -1);
+            $this->_map->sources = array_merge($this->_map->sources, $data->sources);
         }
-        if ($data['names']) {
-            $retNames .= ($retNames ? ',' : '').substr(json_encode($data['names']), 1, -1);
+        if ($data->names) {
+            //$this->_map->names .= ($this->_map->names ? ',' : '').substr(json_encode($data->names), 1, -1);
+            $this->_map->names = array_merge($this->_map->names, $data->names);
         }
         if ($previousFileLast) {
             // adjust first by previous
-            if (substr($data['mappings'], 0, 6) == 'AAAAA,') $data['mappings'] = substr($data['mappings'], 6);
-            $str  = Kwf_Assets_Util_Base64VLQ::encode(0);
-            $str .= Kwf_Assets_Util_Base64VLQ::encode(-$previousFileLast['source'] + $previousFileSourcesCount);
-            $str .= Kwf_Assets_Util_Base64VLQ::encode(-$previousFileLast['originalLine']);
-            $str .= Kwf_Assets_Util_Base64VLQ::encode(-$previousFileLast['originalColumn']);
-            $str .= Kwf_Assets_Util_Base64VLQ::encode(-$previousFileLast['name'] + $previousFileNamesCount);
+            if (substr($data->mappings, 0, 6) == 'AAAAA,') $data->mappings = substr($data->mappings, 6);
+            $str  = Kwf_SourceMaps_Base64VLQ::encode(0);
+            $str .= Kwf_SourceMaps_Base64VLQ::encode(-$previousFileLast['source'] + $previousFileSourcesCount);
+            $str .= Kwf_SourceMaps_Base64VLQ::encode(-$previousFileLast['originalLine']);
+            $str .= Kwf_SourceMaps_Base64VLQ::encode(-$previousFileLast['originalColumn']);
+            $str .= Kwf_SourceMaps_Base64VLQ::encode(-$previousFileLast['name'] + $previousFileNamesCount);
             $str .= ",";
-            $data['mappings'] = $str . $data['mappings'];
+            $otherMappings = $str . $data->mappings;
         }
-        $previousFileLast = $data['_x_org_koala-framework_last'];
-        $previousFileSourcesCount = count($data['sources']);
-        $previousFileNamesCount = count($data['names']);
 
-        if ($retMappings) $retMappings .= ';';
-        $retMappings .= $data['mappings'];
+        if ($this->_map->mappings) $this->_map->mappings .= ';';
+        $this->_map->mappings .= $otherMappings;
 
-        //manually build json, names array can be relatively large and merging all entries would be slow
-        $file = $this->getPackageUrl($ext, $language);
-        $ret = '{"version":3, "file": "'.$file.'", "sources": ['.$retSources.'], "names": ['.$retNames.'], "mappings": "'.$retMappings.'"}';
-        return $ret;
+        $this->_map->{'_x_org_koala-framework_last'}['source'] += $previousFileSourcesCount;
+        $this->_map->{'_x_org_koala-framework_last'}['name'] += $previousFileNamesCount;
     }
 
+    /**
+     * Returns the contents of the minified file
+     */
     public function getFileContents()
     {
         return $this->_file;
     }
 
+    /**
+     * Returns the contents of the source map as string
+     *
+     * @return string
+     */
     public function getMapContents($includeLastExtension = true)
     {
         if ($this->_mappingsChanged) $this->_generateMappings();
@@ -429,6 +459,11 @@ class Kwf_SourceMaps_SourceMap
         return json_encode($this->_map);
     }
 
+    /**
+     * Returns the contents of the source map as object (that can be json_encoded)
+     *
+     * @return stdObject
+     */
     public function getMapContentsData($includeLastExtension = true)
     {
         if ($this->_mappingsChanged) $this->_generateMappings();
@@ -438,6 +473,12 @@ class Kwf_SourceMaps_SourceMap
         return $this->_map;
     }
 
+    /**
+     * Save the source map to a file
+     *
+     * @param string file name the source map should be saved to
+     * @param string optional file name the minified file should be saved to
+     */
     public function save($mapFileName, $fileFileName = null)
     {
         if ($fileFileName !== null) file_put_contents($fileFileName, $this->_file);
