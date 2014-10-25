@@ -8,6 +8,9 @@
 * source map aware string replace for existing mapping
 * concat maps (optimized for best performance)
 
+### Requirements
+
+* Php 5.2+
 
 ### Installation
 Install using composer:
