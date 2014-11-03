@@ -389,10 +389,11 @@ class Kwf_SourceMaps_SourceMap
     {
         $this->_mappingsChanged = true;
 
+        $this->_file .= "\n".$other->_file;
+
         $data = $other->getMapContentsData();
         if (!$data->mappings) {
             $fileContents = $other->_file;
-            $this->_file .= "\n".$other->_file;
             $data->mappings = 'AAAAA'.str_repeat(';', substr_count($other->_file, "\n"));
             $data->{'_x_org_koala-framework_last'} = array(
                 'source' => 0,
