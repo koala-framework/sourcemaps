@@ -373,7 +373,7 @@ class Kwf_SourceMaps_SourceMap
                 }
             }
         }
-        $this->_map->{'_x_org_koala-framework_last'} = array(
+        $this->_map->{'_x_org_koala-framework_last'} = (object)array(
             'source' => $previousSource,
             'originalLine' => $previousOriginalLine,
             'originalColumn' => $previousOriginalColumn,
@@ -400,7 +400,7 @@ class Kwf_SourceMaps_SourceMap
         if (!$data->mappings) {
             $fileContents = $other->_file;
             $data->mappings = 'AAAAA'.str_repeat(';', substr_count($other->_file, "\n"));
-            $data->{'_x_org_koala-framework_last'} = array(
+            $data->{'_x_org_koala-framework_last'} = (object)array(
                 'source' => 0,
                 'originalLine' => 0,
                 'originalColumn' => 0,
