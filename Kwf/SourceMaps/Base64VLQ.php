@@ -65,7 +65,7 @@ class Kwf_SourceMaps_Base64VLQ
   /**
    * Return the value decoded from base 64 VLQ.
    */
-  public static function decode($encoded) {
+  public static function decode(&$encoded) {
     $vlq = 0;
 
     $i = 0;
@@ -75,10 +75,8 @@ class Kwf_SourceMaps_Base64VLQ
       $i++;
     } while ($digit & self::$CONTINUATION_BIT);
 
-    return array(
-        'value' => self::fromVLQSigned($vlq),
-        'rest' => substr($encoded, $i)
-    );
+    $encoded = substr($encoded, $i);
+    return self::fromVLQSigned($vlq);
   }
 
   /**

@@ -4,9 +4,10 @@ class Kwf_SourceMaps_Test extends PHPUnit_Framework_TestCase
     public function testBase64Vlq()
     {
         for ($i = -255; $i < 256; $i++) {
-            $result = Kwf_SourceMaps_Base64VLQ::decode(Kwf_SourceMaps_Base64VLQ::encode($i));
-            $this->assertEquals($result['value'], $i);
-            $this->assertEquals($result['rest'], "");
+            $v = Kwf_SourceMaps_Base64VLQ::encode($i);
+            $result = Kwf_SourceMaps_Base64VLQ::decode($v);
+            $this->assertEquals($result, $i);
+            $this->assertEquals($v, "");
         }
     }
 
