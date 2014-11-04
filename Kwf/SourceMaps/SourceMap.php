@@ -11,6 +11,8 @@ class Kwf_SourceMaps_SourceMap
     protected $_mappings;
     protected $_mappingsChanged = false; //set to true if _mappings changed and _map['mappings'] is outdated
 
+    private static $_mappingSeparator = '/^[,;]/';
+
     /**
      * @param string contents of the source map
      * @param string contents of the minified file
@@ -189,7 +191,6 @@ class Kwf_SourceMaps_SourceMap
         $generatedLine = 1;
         $previousGeneratedColumn = 0;
         $newPreviousGeneratedColumn = 0;
-        $mappingSeparator = '/^[,;]/';
 
         $str = $this->_map->mappings;
 
@@ -225,7 +226,7 @@ class Kwf_SourceMaps_SourceMap
                 $newPreviousGeneratedColumn = $generatedColumn;
 
                 //read rest of block as it is
-                while (strlen($str) > 0 && !preg_match($mappingSeparator, $str[0])) {
+                while (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
                     $newMappings .= $str[0];
                     $str = substr($str, 1);
                 }
@@ -255,7 +256,6 @@ class Kwf_SourceMaps_SourceMap
         $previousOriginalColumn = 0;
         $previousSource = 0;
         $previousName = 0;
-        $mappingSeparator = '/^[,;]/';
 
         $str = $this->_map->mappings;
 
@@ -276,14 +276,14 @@ class Kwf_SourceMaps_SourceMap
                 $previousGeneratedColumn = $mapping['generatedColumn'];
                 $str = $temp['rest'];
 
-                if (strlen($str) > 0 && !preg_match($mappingSeparator, $str[0])) {
+                if (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
                     // Original source.
                     $temp = Kwf_SourceMaps_Base64VLQ::decode($str);
                     $mapping['originalSource'] = (isset($this->_map->sourceRoot) ? $this->_map->sourceRoot.'/' : '')
                                                  . $this->_map->sources[$previousSource + $temp['value']];
                     $previousSource += $temp['value'];
                     $str = $temp['rest'];
-                    if (strlen($str) === 0 || preg_match($mappingSeparator, $str[0])) {
+                    if (strlen($str) === 0 || preg_match(self::$_mappingSeparator, $str[0])) {
                         throw new Exception('Found a source, but no line and column');
                     }
 
@@ -294,7 +294,7 @@ class Kwf_SourceMaps_SourceMap
                     // Lines are stored 0-based
                     $mapping['originalLine'] += 1;
                     $str = $temp['rest'];
-                    if (strlen($str) === 0 || preg_match($mappingSeparator, $str[0])) {
+                    if (strlen($str) === 0 || preg_match(self::$_mappingSeparator, $str[0])) {
                         throw new Exception('Found a source and line, but no column');
                     }
 
@@ -304,7 +304,7 @@ class Kwf_SourceMaps_SourceMap
                     $previousOriginalColumn = $mapping['originalColumn'];
                     $str = $temp['rest'];
 
-                    if (strlen($str) > 0 && !preg_match($mappingSeparator, $str[0])) {
+                    if (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
                         // Original name.
                         $temp = Kwf_SourceMaps_Base64VLQ::decode($str);
                         $mapping['name'] = $this->_map->names[$previousName + $temp['value']];
@@ -325,7 +325,7 @@ class Kwf_SourceMaps_SourceMap
         $previousOriginalColumn = 0;
         $previousSource = 0;
         $previousName = 0;
-        $mappingSeparator = '/^[,;]/';
+        $lineCount = 0;
 
         $str = $this->_map->mappings;
 
@@ -341,7 +341,7 @@ class Kwf_SourceMaps_SourceMap
                 $previousGeneratedColumn = $previousGeneratedColumn + $temp['value'];
                 $str = $temp['rest'];
 
-                if (strlen($str) > 0 && !preg_match($mappingSeparator, $str[0])) {
+                if (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
                     // Original source.
                     $temp = Kwf_SourceMaps_Base64VLQ::decode($str);
                     $previousSource += $temp['value'];
@@ -363,7 +363,7 @@ class Kwf_SourceMaps_SourceMap
                     $previousOriginalColumn = $previousOriginalColumn + $temp['value'];
                     $str = $temp['rest'];
 
-                    if (strlen($str) > 0 && !preg_match($mappingSeparator, $str[0])) {
+                    if (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
                         // Original name.
                         $temp = Kwf_SourceMaps_Base64VLQ::decode($str);
                         $previousName += $temp['value'];
