@@ -333,6 +333,7 @@ class Kwf_SourceMaps_SourceMap
             if ($str[0] === ';') {
                 $str = substr($str, 1);
                 $previousGeneratedColumn = 0;
+                $lineCount++;
             } else if ($str[0] === ',') {
                 $str = substr($str, 1);
             } else {
@@ -346,16 +347,16 @@ class Kwf_SourceMaps_SourceMap
                     $temp = Kwf_SourceMaps_Base64VLQ::decode($str);
                     $previousSource += $temp['value'];
                     $str = $temp['rest'];
-                    if (strlen($str) === 0 || preg_match($mappingSeparator, $str[0])) {
-                        throw new Error('Found a source, but no line and column');
+                    if (strlen($str) === 0 || preg_match(self::$_mappingSeparator, $str[0])) {
+                        throw new Exception('Found a source, but no line and column');
                     }
 
                     // Original line.
                     $temp = Kwf_SourceMaps_Base64VLQ::decode($str);
                     $previousOriginalLine = $previousOriginalLine + $temp['value'];
                     $str = $temp['rest'];
-                    if (strlen($str) === 0 || preg_match($mappingSeparator, $str[0])) {
-                        throw new Error('Found a source and line, but no column');
+                    if (strlen($str) === 0 || preg_match(self::$_mappingSeparator, $str[0])) {
+                        throw new Exception('Found a source and line, but no column');
                     }
 
                     // Original column.
@@ -378,6 +379,10 @@ class Kwf_SourceMaps_SourceMap
             'originalColumn' => $previousOriginalColumn,
             'name' => $previousName,
         );
+
+        if (substr_count($this->_file, "\n") != $lineCount) {
+            throw new Exception("line count in mapping ($lineCount) doesn't match file (".substr_count($this->_file, "\n").")");
+        }
     }
 
     /**
