@@ -11,8 +11,6 @@ class Kwf_SourceMaps_SourceMap
     protected $_mappings;
     protected $_mappingsChanged = false; //set to true if _mappings changed and _map['mappings'] is outdated
 
-    private static $_mappingSeparator = '/^[,;]/';
-
     /**
      * @param string contents of the source map
      * @param string contents of the minified file
@@ -245,7 +243,7 @@ class Kwf_SourceMaps_SourceMap
                 $newPreviousGeneratedColumn = $generatedColumn;
 
                 //read rest of block as it is
-                while (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
+                while (strlen($str) > 0 && !($str[0]==',' || $str[0]==';')) {
                     $newMappings .= $str[0];
                     $str = substr($str, 1);
                 }
@@ -294,13 +292,13 @@ class Kwf_SourceMaps_SourceMap
                 $mapping['generatedColumn'] = $previousGeneratedColumn + $value;
                 $previousGeneratedColumn = $mapping['generatedColumn'];
 
-                if (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
+                if (strlen($str) > 0 && !($str[0]==',' || $str[0]==';')) {
                     // Original source.
                     $value = Kwf_SourceMaps_Base64VLQ::decode($str);
                     $mapping['originalSource'] = (isset($this->_map->sourceRoot) ? $this->_map->sourceRoot.'/' : '')
                                                  . $this->_map->sources[$previousSource + $value];
                     $previousSource += $value;
-                    if (strlen($str) === 0 || preg_match(self::$_mappingSeparator, $str[0])) {
+                    if (strlen($str) === 0 || ($str[0]==',' || $str[0]==';')) {
                         throw new Exception('Found a source, but no line and column');
                     }
 
@@ -310,7 +308,7 @@ class Kwf_SourceMaps_SourceMap
                     $previousOriginalLine = $mapping['originalLine'];
                     // Lines are stored 0-based
                     $mapping['originalLine'] += 1;
-                    if (strlen($str) === 0 || preg_match(self::$_mappingSeparator, $str[0])) {
+                    if (strlen($str) === 0 || ($str[0]==',' || $str[0]==';')) {
                         throw new Exception('Found a source and line, but no column');
                     }
 
@@ -319,7 +317,7 @@ class Kwf_SourceMaps_SourceMap
                     $mapping['originalColumn'] = $previousOriginalColumn + $value;
                     $previousOriginalColumn = $mapping['originalColumn'];
 
-                    if (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
+                    if (strlen($str) > 0 && !($str[0]==',' || $str[0]==';')) {
                         // Original name.
                         $value = Kwf_SourceMaps_Base64VLQ::decode($str);
                         $mapping['name'] = $this->_map->names[$previousName + $value];
@@ -354,23 +352,23 @@ class Kwf_SourceMaps_SourceMap
                 // Generated column.
                 $previousGeneratedColumn += Kwf_SourceMaps_Base64VLQ::decode($str);
 
-                if (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
+                if (strlen($str) > 0 && !($str[0]==',' || $str[0]==';')) {
                     // Original source.
                     $previousSource += Kwf_SourceMaps_Base64VLQ::decode($str);
-                    if (strlen($str) === 0 || preg_match(self::$_mappingSeparator, $str[0])) {
+                    if (strlen($str) === 0 || ($str[0]==',' || $str[0]==';')) {
                         throw new Exception('Found a source, but no line and column');
                     }
 
                     // Original line.
                     $previousOriginalLine += Kwf_SourceMaps_Base64VLQ::decode($str);
-                    if (strlen($str) === 0 || preg_match(self::$_mappingSeparator, $str[0])) {
+                    if (strlen($str) === 0 || ($str[0]==',' || $str[0]==';')) {
                         throw new Exception('Found a source and line, but no column');
                     }
 
                     // Original column.
                     $previousOriginalColumn += Kwf_SourceMaps_Base64VLQ::decode($str);
 
-                    if (strlen($str) > 0 && !preg_match(self::$_mappingSeparator, $str[0])) {
+                    if (strlen($str) > 0 && !($str[0]==',' || $str[0]==';')) {
                         // Original name.
                         $previousName += Kwf_SourceMaps_Base64VLQ::decode($str);
                     }
@@ -435,12 +433,14 @@ class Kwf_SourceMaps_SourceMap
         $otherMappings = '';
 
         if ($data->sources) {
-            //$this->_map->sources .= ($this->_map->sources ? ',' : '').substr(json_encode($data->sources), 1, -1);
-            $this->_map->sources = array_merge($this->_map->sources, $data->sources);
+            foreach ($data->sources as $s) {
+                $this->_map->sources[] = $s;
+            }
         }
         if ($data->names) {
-            //$this->_map->names .= ($this->_map->names ? ',' : '').substr(json_encode($data->names), 1, -1);
-            $this->_map->names = array_merge($this->_map->names, $data->names);
+            foreach ($data->names as $n) {
+                $this->_map->names[] = $n;
+            }
         }
 
         $otherMappings = $data->mappings;
@@ -455,7 +455,7 @@ class Kwf_SourceMaps_SourceMap
 
             // Generated column.
             $str  .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
-            if (strlen($otherMappings) > 0 && !preg_match(self::$_mappingSeparator, $otherMappings[0])) {
+            if (strlen($otherMappings) > 0 && !($otherMappings[0]==',' || $otherMappings[0]==';')) {
 
                 // Original source.
                 $value = Kwf_SourceMaps_Base64VLQ::decode($otherMappings);
@@ -472,7 +472,7 @@ class Kwf_SourceMaps_SourceMap
                 $str  .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings) - $previousFileLast->originalColumn);
 
                 // Original name.
-                if (strlen($otherMappings) > 0 && !preg_match(self::$_mappingSeparator, $otherMappings[0])) {
+                if (strlen($otherMappings) > 0 && !($otherMappings[0]==',' || $otherMappings[0]==';')) {
                     $value = Kwf_SourceMaps_Base64VLQ::decode($otherMappings);
                     if ($previousFileNamesCount) {
                         $absoluteValue = $value + $previousFileNamesCount;
@@ -494,7 +494,7 @@ class Kwf_SourceMaps_SourceMap
                             // Generated column.
                             $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
 
-                            if (strlen($otherMappings) > 0 && !preg_match(self::$_mappingSeparator, $otherMappings[0])) {
+                            if (strlen($otherMappings) > 0 && !($otherMappings[0]==',' || $otherMappings[0]==';')) {
                                 // Original source.
                                 $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
 
@@ -504,7 +504,7 @@ class Kwf_SourceMaps_SourceMap
                                 // Original column.
                                 $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
 
-                                if (strlen($otherMappings) > 0 && !preg_match(self::$_mappingSeparator, $otherMappings[0])) {
+                                if (strlen($otherMappings) > 0 && !($otherMappings[0]==',' || $otherMappings[0]==';')) {
                                     // Original name.
                                     $value = Kwf_SourceMaps_Base64VLQ::decode($otherMappings);
                                     if ($previousFileNamesCount) {
