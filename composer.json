@@ -17,5 +17,10 @@
         "psr-0": {
             "Kwf_SourceMaps_": "tests"
         }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1-dev"
+        }
     }
 }
