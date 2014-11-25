@@ -409,15 +409,6 @@ class Kwf_SourceMaps_SourceMap
 
         $data = $other->getMapContentsData();
 
-        if (!$data->mappings) {
-            $data->mappings = str_repeat(';', substr_count($other->_fileContents, "\n"));
-            $data->{'_x_org_koala-framework_last'} = (object)array(
-                'source' => -1,
-                'originalLine' => $this->_map->{'_x_org_koala-framework_last'}->originalLine,
-                'originalColumn' => $this->_map->{'_x_org_koala-framework_last'}->originalColumn,
-                'name' => 0,
-            );
-        }
         if ($this->_map->mappings) {
             $previousFileLast = $this->_map->{'_x_org_koala-framework_last'};
         } else {
@@ -426,6 +417,15 @@ class Kwf_SourceMaps_SourceMap
                 'originalLine' => 0,
                 'originalColumn' => 0,
                 'name' => 0,
+            );
+        }
+        if (!$data->mappings) {
+            $data->mappings = str_repeat(';', substr_count($other->_fileContents, "\n"));
+            $data->{'_x_org_koala-framework_last'} = (object)array(
+                'source' => -1,
+                'originalLine' => $previousFileLast->originalLine,
+                'originalColumn' => $previousFileLast->originalColumn,
+                'name' => -1,
             );
         }
         $previousFileSourcesCount = count($this->_map->sources);
