@@ -63,7 +63,7 @@ class Kwf_SourceMaps_SourceMap
     {
         $map = (object)array(
             'version' => 3,
-            'mappings' => str_repeat(';', substr_count($fileContents, "\n")),
+            'mappings' => '',
             'sources' => array(),
             'names' => array(),
         );
@@ -375,15 +375,17 @@ class Kwf_SourceMaps_SourceMap
                 }
             }
         }
-        $this->_map->{'_x_org_koala-framework_last'} = (object)array(
-            'source' => $previousSource,
-            'originalLine' => $previousOriginalLine,
-            'originalColumn' => $previousOriginalColumn,
-            'name' => $previousName,
-        );
+        if ($this->_map->mappings) { //only add if mapping is not empty
+            $this->_map->{'_x_org_koala-framework_last'} = (object)array(
+                'source' => $previousSource,
+                'originalLine' => $previousOriginalLine,
+                'originalColumn' => $previousOriginalColumn,
+                'name' => $previousName,
+            );
 
-        if (substr_count($this->_fileContents, "\n") != $lineCount) {
-            throw new Exception("line count in mapping ($lineCount) doesn't match file (".substr_count($this->_fileContents, "\n").")");
+            if (substr_count($this->_fileContents, "\n") != $lineCount) {
+                throw new Exception("line count in mapping ($lineCount) doesn't match file (".substr_count($this->_fileContents, "\n").")");
+            }
         }
     }
 
@@ -406,17 +408,26 @@ class Kwf_SourceMaps_SourceMap
         $this->_fileContents .= $other->_fileContents;
 
         $data = $other->getMapContentsData();
+
         if (!$data->mappings) {
-            $data->mappings = 'AAAAA'.str_repeat(';', substr_count($other->_fileContents, "\n"));
+            $data->mappings = str_repeat(';', substr_count($other->_fileContents, "\n"));
             $data->{'_x_org_koala-framework_last'} = (object)array(
+                'source' => -1,
+                'originalLine' => $this->_map->{'_x_org_koala-framework_last'}->originalLine,
+                'originalColumn' => $this->_map->{'_x_org_koala-framework_last'}->originalColumn,
+                'name' => 0,
+            );
+        }
+        if ($this->_map->mappings) {
+            $previousFileLast = $this->_map->{'_x_org_koala-framework_last'};
+        } else {
+            $previousFileLast = (object)array(
                 'source' => 0,
                 'originalLine' => 0,
                 'originalColumn' => 0,
                 'name' => 0,
             );
         }
-
-        $previousFileLast = $this->_map->{'_x_org_koala-framework_last'};
         $previousFileSourcesCount = count($this->_map->sources);
         $previousFileNamesCount = count($this->_map->names);
         if ($previousFileLast->source > $previousFileSourcesCount) {
@@ -424,6 +435,7 @@ class Kwf_SourceMaps_SourceMap
                 throw new Exception("Invalid last source, must not be higher than sources");
             }
         }
+
         if ($previousFileLast->name > $previousFileNamesCount) {
             if ($previousFileNamesCount != 0 && $previousFileLast->name != 0) {
                 throw new Exception("Invalid last name, must not be higher than names");
@@ -524,10 +536,12 @@ class Kwf_SourceMaps_SourceMap
 
         $this->_map->mappings .= $str . $otherMappings;
 
-        $this->_map->{'_x_org_koala-framework_last'}->source = $previousFileSourcesCount + $data->{'_x_org_koala-framework_last'}->source;
-        $this->_map->{'_x_org_koala-framework_last'}->name = $previousFileNamesCount + $data->{'_x_org_koala-framework_last'}->name;
-        $this->_map->{'_x_org_koala-framework_last'}->originalLine = $data->{'_x_org_koala-framework_last'}->originalLine;
-        $this->_map->{'_x_org_koala-framework_last'}->originalColumn = $data->{'_x_org_koala-framework_last'}->originalColumn;
+        $this->_map->{'_x_org_koala-framework_last'} = (object)array(
+            'source' => $previousFileSourcesCount + $data->{'_x_org_koala-framework_last'}->source,
+            'name' => $previousFileNamesCount + $data->{'_x_org_koala-framework_last'}->name,
+            'originalLine' => $data->{'_x_org_koala-framework_last'}->originalLine,
+            'originalColumn' => $data->{'_x_org_koala-framework_last'}->originalColumn
+        );
     }
 
     /**

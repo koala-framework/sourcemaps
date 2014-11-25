@@ -146,4 +146,58 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
         $contents = explode("\n", $contents);
         $this->assertEquals(2*2, count($contents));
     }
+
+    public function testWithNoMapping1()
+    {
+        $map = new Kwf_SourceMaps_SourceMap(Kwf_SourceMaps_TestData::$testSmallMap1, Kwf_SourceMaps_TestData::$testSmallGeneratedCode1);
+        $map1 = Kwf_SourceMaps_SourceMap::createEmptyMap("aaa;\nbbb;\n");
+        $map2 = new Kwf_SourceMaps_SourceMap(Kwf_SourceMaps_TestData::$testSmallMap2, Kwf_SourceMaps_TestData::$testSmallGeneratedCode2);
+        $map->concat($map1);
+        $map->concat($map2);
+
+        $mappings = $map->getMappings();
+        $mappingsOffs = 2;
+        $genLineOffs = 1+2;
+        $this->assertEquals($mappings[$mappingsOffs+0], array(
+            'generatedLine' => $genLineOffs+1,
+            'generatedColumn' => 1,
+            'originalSource' => '/the/root/one2.js',
+            'originalLine' => 1,
+            'originalColumn' => 1,
+        ));
+        $this->assertEquals($mappings[$mappingsOffs+1], array(
+            'generatedLine' => $genLineOffs+1,
+            'generatedColumn' => 5,
+            'originalSource' => '/the/root/one2.js',
+            'originalLine' => 1,
+            'originalColumn' => 5
+        ));
+    }
+
+    public function testWithNoMapping2()
+    {
+        $map = new Kwf_SourceMaps_SourceMap(Kwf_SourceMaps_TestData::$testSmallMap1, Kwf_SourceMaps_TestData::$testSmallGeneratedCode1);
+        $map1 = Kwf_SourceMaps_SourceMap::createEmptyMap("aaa;\nbbb;");
+        $map2 = new Kwf_SourceMaps_SourceMap(Kwf_SourceMaps_TestData::$testSmallMap2, Kwf_SourceMaps_TestData::$testSmallGeneratedCode2);
+        $map->concat($map1);
+        $map->concat($map2);
+
+        $mappings = $map->getMappings();
+        $mappingsOffs = 2;
+        $genLineOffs = 1+2;
+        $this->assertEquals($mappings[$mappingsOffs+0], array(
+            'generatedLine' => $genLineOffs+1,
+            'generatedColumn' => 1,
+            'originalSource' => '/the/root/one2.js',
+            'originalLine' => 1,
+            'originalColumn' => 1,
+        ));
+        $this->assertEquals($mappings[$mappingsOffs+1], array(
+            'generatedLine' => $genLineOffs+1,
+            'generatedColumn' => 5,
+            'originalSource' => '/the/root/one2.js',
+            'originalLine' => 1,
+            'originalColumn' => 5
+        ));
+    }
 }

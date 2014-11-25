@@ -36,6 +36,26 @@ class Kwf_SourceMaps_TestData
         "sourceRoot": "/the/root",
         "mappings": "CAAC,IAAI,IAAM,SAAUA,GAClB,OAAOC,IAAID;CCDb,IAAI,IAAM,SAAUE,GAClB,OAAOA"
     }';
+
+    public static $testSmallGeneratedCode1 = " ONE1.foo;";
+    public static $testSmallMap1 = '{
+        "version": 3,
+        "file": "min1.js",
+        "names": [],
+        "sources": ["one1.js"],
+        "sourceRoot": "/the/root",
+        "mappings": "CAAC,IAAI"
+    }';
+    public static $testSmallGeneratedCode2 = " ONE2.foo;";
+    public static $testSmallMap2 = '{
+        "version": 3,
+        "file": "min2.js",
+        "names": [],
+        "sources": ["one2.js"],
+        "sourceRoot": "/the/root",
+        "mappings": "CAAC,IAAI"
+    }';
+
     public static $testMapWithSourcesContent = '{
         "version": 3,
         "file": "min.js",
