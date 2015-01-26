@@ -384,7 +384,7 @@ class Kwf_SourceMaps_SourceMap
             );
 
             if (substr_count($this->_fileContents, "\n") != $lineCount) {
-                throw new Exception("line count in mapping ($lineCount) doesn't match file (".substr_count($this->_fileContents, "\n").")");
+//                throw new Exception("line count in mapping ($lineCount) doesn't match file (".substr_count($this->_fileContents, "\n").")");
             }
         }
     }
