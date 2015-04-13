@@ -80,6 +80,21 @@ class Kwf_SourceMaps_Base64VLQ
   }
 
   /**
+   * Return the value decoded from base 64 VLQ.
+   */
+  public static function decodePos($encoded, &$pos) {
+    $vlq = 0;
+    $i = 0;
+    do {
+      $digit = self::$CHAR_TO_INT[$encoded[$pos]];
+      $vlq += ($digit & 0x1F) << $i;
+      $i += 5; $pos++;
+    } while ($digit >= 0x20);
+
+    return $vlq & 1 ? self::zeroFill(~$vlq+2, 1) | (-1 - 0x7fffffff) : self::zeroFill($vlq, 1);
+  }
+
+  /**
    * Right shift with zero fill.
    *
    * @param number $a number to shift
