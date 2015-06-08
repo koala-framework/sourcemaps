@@ -80,6 +80,7 @@ class Kwf_SourceMaps_SourceMap
      */
     public static function createFromInline($fileContents)
     {
+        // '//# sourceMappingURL=data:application/json;charset:utf-8;base64,
         // '//# sourceMappingURL=data:application/json;base64,'
         $pos = strrpos($fileContents, "\n//# sourceMappingURL=");
         if ($pos === false) {
@@ -87,10 +88,14 @@ class Kwf_SourceMaps_SourceMap
         }
         $url = substr($fileContents, $pos+22);
         $url = rtrim($url);
-        if (substr($url, 0, 29) != 'data:application/json;base64,') {
+        if (substr($url, 0, 29) == 'data:application/json;base64,') {
+            $map = substr($url, 29);
+        } else if (substr($url, 0, 29+14) == 'data:application/json;charset:utf-8;base64,') {
+            $map = substr($url, 29+14);
+        } else {
             throw new Exception("Unsupported sourceMappingURL");
         }
-        $map = base64_decode(substr($url, 29));
+        $map = base64_decode($map);
         $map = json_decode($map);
         $fileContents = substr($fileContents, $pos);
         return new self($map, $fileContents);
