@@ -555,6 +555,15 @@ class Kwf_SourceMaps_SourceMap
     }
 
     /**
+     * Sets the contents of the minified file
+     */
+    public function setFileContents($fileContents)
+    {
+        $this->_fileContents = $fileContents;
+        return $this;
+    }
+
+    /**
      * Returns the contents of the source map as string
      *
      * @return string
