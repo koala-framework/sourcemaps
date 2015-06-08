@@ -71,6 +71,38 @@ class Kwf_SourceMaps_SourceMap
     }
 
     /**
+     * Create a new sourcemap based on sourceMappingURL with inline base64 encoded data
+     *
+     * Example:
+     * //# sourceMappingURL=data:application/json;base64,....
+     *
+     * @param string contents of the minified file including sourceMappingURL
+     */
+    public static function createFromInline($fileContents)
+    {
+        // '//# sourceMappingURL=data:application/json;base64,'
+        $pos = strrpos($fileContents, "\n//# sourceMappingURL=");
+        if ($pos === false) {
+            throw new Exception("No sourceMappingURL found");
+        }
+        $url = substr($fileContents, $pos+22);
+        $url = rtrim($url);
+        if (substr($url, 0, 29) != 'data:application/json;base64,') {
+            throw new Exception("Unsupported sourceMappingURL");
+        }
+        $map = base64_decode(substr($url, 29));
+        $map = json_decode($map);
+        $fileContents = substr($fileContents, $pos);
+        return new self($map, $fileContents);
+    }
+
+    public static function hasInline($fileContents)
+    {
+        $pos = strrpos($fileContents, "\n//# sourceMappingURL=data:");
+        return $pos !== false;
+    }
+
+    /**
      * Adds a mapping
      *
      * @param integer $generatedLine The line number in generated file
@@ -601,5 +633,17 @@ class Kwf_SourceMaps_SourceMap
     {
         if ($fileFileName !== null) file_put_contents($fileFileName, $this->_fileContents);
         file_put_contents($mapFileName, $this->getMapContents());
+    }
+
+    /**
+     * Returns the contents of the minimied file with source map data appended inline as data url
+     *
+     * @return string
+     */
+    public function getFileContentsInlineMap($includeLastExtension = true)
+    {
+        $ret = $this->_fileContents;
+        $ret .= "\n//# sourceMappingURL=data:application/json;base64,".base64_encode($this->getMapContents($includeLastExtension))."\n";
+        return $ret;
     }
 }
