@@ -23,7 +23,7 @@ class Kwf_SourceMaps_Base64VLQ
    * We generate the value for 32 bit machines, hence
    *   -2147483648 becomes 1, not 4294967297,
    * even on a 64 bit machine.
-  */
+   */
   public static function toVLQSigned($aValue) {
     return 0xffffffff & ($aValue < 0 ? ((-$aValue) << 1) + 1 : ($aValue << 1) + 0);
   }
@@ -37,9 +37,10 @@ class Kwf_SourceMaps_Base64VLQ
    * Hence
    *   1 becomes -2147483648
    * even on a 64 bit machine.
+   * @param integer $aValue
    */
   public static function fromVLQSigned($aValue) {
-    return $aValue & 1 ? self::zeroFill(~$aValue+2, 1) | (-1 - 0x7fffffff) : self::zeroFill($aValue, 1);
+    return $aValue & 1 ? self::zeroFill(~$aValue + 2, 1) | (-1 - 0x7fffffff) : self::zeroFill($aValue, 1);
   }
 
   /**
@@ -91,29 +92,29 @@ class Kwf_SourceMaps_Base64VLQ
       $i += 5; $pos++;
     } while ($digit >= 0x20);
 
-    return $vlq & 1 ? self::zeroFill(~$vlq+2, 1) | (-1 - 0x7fffffff) : self::zeroFill($vlq, 1);
+    return $vlq & 1 ? self::zeroFill(~$vlq + 2, 1) | (-1 - 0x7fffffff) : self::zeroFill($vlq, 1);
   }
 
   /**
    * Right shift with zero fill.
    *
    * @param number $a number to shift
-   * @param nunber $b number of bits to shift
-   * @return number
+   * @param integer $b number of bits to shift
+   * @return integer
    */
   public static function zeroFill($a, $b) {
-    return ($a >= 0) ? ($a >> $b) : ($a >> $b) & (PHP_INT_MAX >> ($b-1));
+    return ($a >= 0) ? ($a >> $b) : ($a >> $b) & (PHP_INT_MAX >> ($b - 1));
   }
 
   /**
    * Encode single 6-bit digit as base64.
    *
-   * @param number $number
+   * @param integer $number
    * @return string
    */
   public static function base64Encode($number) {
     if ($number < 0 || $number > 63) {
-      throw new Exception("Must be between 0 and 63: " . $number);
+      throw new Exception("Must be between 0 and 63: ".$number);
     }
     return self::$INT_TO_CHAR[$number];
   }
@@ -126,7 +127,7 @@ class Kwf_SourceMaps_Base64VLQ
    */
   public static function base64Decode($char) {
     if (!array_key_exists($char, self::$CHAR_TO_INT)) {
-      throw new Exception("Not a valid base 64 digit: " . $char);
+      throw new Exception("Not a valid base 64 digit: ".$char);
     }
     return self::$CHAR_TO_INT[$char];
   }

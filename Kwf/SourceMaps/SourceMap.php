@@ -61,7 +61,7 @@ class Kwf_SourceMaps_SourceMap
      */
     public static function createEmptyMap($fileContents)
     {
-        $map = (object)array(
+        $map = (object) array(
             'version' => 3,
             'mappings' => '',
             'sources' => array(),
@@ -86,12 +86,12 @@ class Kwf_SourceMaps_SourceMap
         if ($pos === false) {
             throw new Exception("No sourceMappingURL found");
         }
-        $url = substr($fileContents, $pos+22);
+        $url = substr($fileContents, $pos + 22);
         $url = rtrim($url);
         if (substr($url, 0, 29) == 'data:application/json;base64,') {
             $map = substr($url, 29);
-        } else if (substr($url, 0, 29+14) == 'data:application/json;charset:utf-8;base64,') {
-            $map = substr($url, 29+14);
+        } else if (substr($url, 0, 29 + 14) == 'data:application/json;charset:utf-8;base64,') {
+            $map = substr($url, 29 + 14);
         } else {
             throw new Exception("Unsupported sourceMappingURL");
         }
@@ -118,7 +118,9 @@ class Kwf_SourceMaps_SourceMap
      */
     public function addMapping($generatedLine, $generatedColumn, $originalLine, $originalColumn, $originalSource, $originalName = null)
     {
-        if (!isset($this->_mappings)) $this->getMappings();
+        if (!isset($this->_mappings)) {
+          $this->getMappings();
+        }
         $this->_mappings[] = array(
             'generatedLine' => $generatedLine,
             'generatedColumn' => $generatedColumn,
@@ -166,7 +168,7 @@ class Kwf_SourceMaps_SourceMap
 
         // group mappings by generated line number.
         $groupedMap = $groupedMapEncoded = array();
-        foreach ($this->_mappings as $m){
+        foreach ($this->_mappings as $m) {
             $groupedMap[$m['generatedLine']][] = $m;
         }
         ksort($groupedMap);
@@ -174,14 +176,14 @@ class Kwf_SourceMaps_SourceMap
         $lastGeneratedLine = $lastOriginalSourceIndex = $lastOriginalNameIndex = $lastOriginalLine = $lastOriginalColumn = 0;
 
         foreach ($groupedMap as $lineNumber => $lineMap) {
-            while (++$lastGeneratedLine < $lineNumber){
+            while (++$lastGeneratedLine < $lineNumber) {
                 $groupedMapEncoded[] = ';';
             }
 
             $lineMapEncoded = array();
             $lastGeneratedColumn = 0;
 
-            foreach ($lineMap as $m){
+            foreach ($lineMap as $m) {
                 $mapEncoded = Kwf_SourceMaps_Base64VLQ::encode($m['generatedColumn'] - $lastGeneratedColumn);
                 $lastGeneratedColumn = $m['generatedColumn'];
 
@@ -208,7 +210,7 @@ class Kwf_SourceMaps_SourceMap
                 $lineMapEncoded[] = $mapEncoded;
             }
 
-            $groupedMapEncoded[] = implode(',', $lineMapEncoded) . ';';
+            $groupedMapEncoded[] = implode(',', $lineMapEncoded).';';
         }
 
         $this->_map->mappings = rtrim(implode($groupedMapEncoded), ';');
@@ -222,24 +224,30 @@ class Kwf_SourceMaps_SourceMap
      */
     public function stringReplace($string, $replace)
     {
-        if ($this->_mappingsChanged) $this->_generateMappings();
+        if ($this->_mappingsChanged) {
+          $this->_generateMappings();
+        }
 
-        if (strpos("\n", $string)) throw new Exception('string must not contain \n');
-        if (strpos("\n", $replace)) throw new Exception('replace must not contain \n');
+        if (strpos("\n", $string)) {
+          throw new Exception('string must not contain \n');
+        }
+        if (strpos("\n", $replace)) {
+          throw new Exception('replace must not contain \n');
+        }
 
         $adjustOffsets = array();
         $pos = 0;
         $str = $this->_fileContents;
         $offset = 0;
         while (($pos = strpos($str, $string, $pos)) !== false) {
-            $this->_fileContents = substr($this->_fileContents, 0, $pos+$offset).$replace.substr($this->_fileContents, $pos+$offset+strlen($string));
-            $offset += strlen($replace)-strlen($string);
-            $line = substr_count(substr($str, 0, $pos), "\n")+1;
+            $this->_fileContents = substr($this->_fileContents, 0, $pos + $offset).$replace.substr($this->_fileContents, $pos + $offset + strlen($string));
+            $offset += strlen($replace) - strlen($string);
+            $line = substr_count(substr($str, 0, $pos), "\n") + 1;
             $column = $pos - strrpos(substr($str, 0, $pos), "\n"); //strrpos can return false for first line which will subtract 0 (=false)
             $adjustOffsets[$line][] = array(
                 'column' => $column,
                 'absoluteOffset' => $offset,
-                'offset' => strlen($replace)-strlen($string)
+                'offset' => strlen($replace) - strlen($string)
             );
             $pos = $pos + strlen($string);
         }
@@ -280,7 +288,7 @@ class Kwf_SourceMaps_SourceMap
                 $newPreviousGeneratedColumn = $generatedColumn;
 
                 //read rest of block as it is
-                while (strlen($str) > 0 && !($str[0]==',' || $str[0]==';')) {
+                while (strlen($str) > 0 && !($str[0] == ',' || $str[0] == ';')) {
                     $newMappings .= $str[0];
                     $str = substr($str, 1);
                 }
@@ -335,7 +343,7 @@ class Kwf_SourceMaps_SourceMap
                     // Original source.
                     $value = Kwf_SourceMaps_Base64VLQ::decodePos($str, $pos);
                     $mapping['originalSource'] = (isset($this->_map->sourceRoot) ? $this->_map->sourceRoot.'/' : '')
-                                                 . $this->_map->sources[$previousSource + $value];
+                                                  . $this->_map->sources[$previousSource + $value];
                     $previousSource += $value;
                     if ($pos >= $end || ($str[$pos]==',' || $str[$pos]==';')) {
                         throw new Exception('Found a source, but no line and column');
@@ -347,7 +355,7 @@ class Kwf_SourceMaps_SourceMap
                     $previousOriginalLine = $mapping['originalLine'];
                     // Lines are stored 0-based
                     $mapping['originalLine'] += 1;
-                    if ($pos >= $end || ($str[$pos]==',' || $str[$pos]==';')) {
+                    if ($pos >= $end || ($str[$pos] == ',' || $str[$pos] == ';')) {
                         throw new Exception('Found a source and line, but no column');
                     }
 
@@ -356,7 +364,7 @@ class Kwf_SourceMaps_SourceMap
                     $mapping['originalColumn'] = $previousOriginalColumn + $value;
                     $previousOriginalColumn = $mapping['originalColumn'];
 
-                    if ($pos < $end && !($str[$pos]==',' || $str[$pos]==';')) {
+                    if ($pos < $end && !($str[$pos] == ',' || $str[$pos] == ';')) {
                         // Original name.
                         $value = Kwf_SourceMaps_Base64VLQ::decodePos($str, $pos);
                         $mapping['name'] = $this->_map->names[$previousName + $value];
@@ -391,23 +399,23 @@ class Kwf_SourceMaps_SourceMap
                 // Generated column.
                 $previousGeneratedColumn += Kwf_SourceMaps_Base64VLQ::decode($str);
 
-                if (strlen($str) > 0 && !($str[0]==',' || $str[0]==';')) {
+                if (strlen($str) > 0 && !($str[0] == ',' || $str[0] == ';')) {
                     // Original source.
                     $previousSource += Kwf_SourceMaps_Base64VLQ::decode($str);
-                    if (strlen($str) === 0 || ($str[0]==',' || $str[0]==';')) {
+                    if (strlen($str) === 0 || ($str[0] == ',' || $str[0] == ';')) {
                         throw new Exception('Found a source, but no line and column');
                     }
 
                     // Original line.
                     $previousOriginalLine += Kwf_SourceMaps_Base64VLQ::decode($str);
-                    if (strlen($str) === 0 || ($str[0]==',' || $str[0]==';')) {
+                    if (strlen($str) === 0 || ($str[0] == ',' || $str[0] == ';')) {
                         throw new Exception('Found a source and line, but no column');
                     }
 
                     // Original column.
                     $previousOriginalColumn += Kwf_SourceMaps_Base64VLQ::decode($str);
 
-                    if (strlen($str) > 0 && !($str[0]==',' || $str[0]==';')) {
+                    if (strlen($str) > 0 && !($str[0] == ',' || $str[0] == ';')) {
                         // Original name.
                         $previousName += Kwf_SourceMaps_Base64VLQ::decode($str);
                     }
@@ -415,7 +423,7 @@ class Kwf_SourceMaps_SourceMap
             }
         }
         if ($this->_map->mappings) { //only add if mapping is not empty
-            $this->_map->{'_x_org_koala-framework_last'} = (object)array(
+            $this->_map->{'_x_org_koala-framework_last'} = (object) array(
                 'source' => $previousSource,
                 'originalLine' => $previousOriginalLine,
                 'originalColumn' => $previousOriginalColumn,
@@ -437,7 +445,9 @@ class Kwf_SourceMaps_SourceMap
      */
     public function concat(Kwf_SourceMaps_SourceMap $other)
     {
-        if ($this->_mappingsChanged) $this->_generateMappings();
+        if ($this->_mappingsChanged) {
+          $this->_generateMappings();
+        }
         if (!isset($this->_map->{'_x_org_koala-framework_last'})) {
             $this->_addLastExtension();
         }
@@ -453,7 +463,7 @@ class Kwf_SourceMaps_SourceMap
         if ($this->_map->mappings) {
             $previousFileLast = $this->_map->{'_x_org_koala-framework_last'};
         } else {
-            $previousFileLast = (object)array(
+            $previousFileLast = (object) array(
                 'source' => 0,
                 'originalLine' => 0,
                 'originalColumn' => 0,
@@ -462,7 +472,7 @@ class Kwf_SourceMaps_SourceMap
         }
         if (!$data->mappings) {
             $data->mappings = str_repeat(';', substr_count($other->_fileContents, "\n"));
-            $data->{'_x_org_koala-framework_last'} = (object)array(
+            $data->{'_x_org_koala-framework_last'} = (object) array(
                 'source' => -1,
                 'originalLine' => $previousFileLast->originalLine,
                 'originalColumn' => $previousFileLast->originalColumn,
@@ -507,8 +517,8 @@ class Kwf_SourceMaps_SourceMap
         if (strlen($otherMappings) > 0) {
 
             // Generated column.
-            $str  .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
-            if (strlen($otherMappings) > 0 && !($otherMappings[0]==',' || $otherMappings[0]==';')) {
+            $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
+            if (strlen($otherMappings) > 0 && !($otherMappings[0] == ',' || $otherMappings[0] == ';')) {
 
                 // Original source.
                 $value = Kwf_SourceMaps_Base64VLQ::decode($otherMappings);
@@ -525,13 +535,13 @@ class Kwf_SourceMaps_SourceMap
                 $str  .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings) - $previousFileLast->originalColumn);
 
                 // Original name.
-                if (strlen($otherMappings) > 0 && !($otherMappings[0]==',' || $otherMappings[0]==';')) {
+                if (strlen($otherMappings) > 0 && !($otherMappings[0] == ',' || $otherMappings[0] == ';')) {
                     $value = Kwf_SourceMaps_Base64VLQ::decode($otherMappings);
                     if ($previousFileNamesCount) {
                         $absoluteValue = $value + $previousFileNamesCount;
                         $value = $absoluteValue - $previousFileLast->name;
                     }
-                    $str  .= Kwf_SourceMaps_Base64VLQ::encode($value);
+                    $str .= Kwf_SourceMaps_Base64VLQ::encode($value);
                 } else if (!count($data->names)) {
                     //file doesn't have names at all, we don't have to adjust that offset
                 } else {
@@ -547,7 +557,7 @@ class Kwf_SourceMaps_SourceMap
                             // Generated column.
                             $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
 
-                            if (strlen($otherMappings) > 0 && !($otherMappings[0]==',' || $otherMappings[0]==';')) {
+                            if (strlen($otherMappings) > 0 && !($otherMappings[0] == ',' || $otherMappings[0] == ';')) {
                                 // Original source.
                                 $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
 
@@ -557,7 +567,7 @@ class Kwf_SourceMaps_SourceMap
                                 // Original column.
                                 $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
 
-                                if (strlen($otherMappings) > 0 && !($otherMappings[0]==',' || $otherMappings[0]==';')) {
+                                if (strlen($otherMappings) > 0 && !($otherMappings[0] == ',' || $otherMappings[0] == ';')) {
                                     // Original name.
                                     $value = Kwf_SourceMaps_Base64VLQ::decode($otherMappings);
                                     if ($previousFileNamesCount) {
@@ -575,9 +585,9 @@ class Kwf_SourceMaps_SourceMap
 
         }
 
-        $this->_map->mappings .= $str . $otherMappings;
+        $this->_map->mappings .= $str.$otherMappings;
 
-        $this->_map->{'_x_org_koala-framework_last'} = (object)array(
+        $this->_map->{'_x_org_koala-framework_last'} = (object) array(
             'source' => $previousFileSourcesCount + $data->{'_x_org_koala-framework_last'}->source,
             'name' => $previousFileNamesCount + $data->{'_x_org_koala-framework_last'}->name,
             'originalLine' => $data->{'_x_org_koala-framework_last'}->originalLine,
@@ -609,7 +619,9 @@ class Kwf_SourceMaps_SourceMap
      */
     public function getMapContents($includeLastExtension = true)
     {
-        if ($this->_mappingsChanged) $this->_generateMappings();
+        if ($this->_mappingsChanged) {
+          $this->_generateMappings();
+        }
         if ($includeLastExtension && !isset($this->_map->{'_x_org_koala-framework_last'})) {
             $this->_addLastExtension();
         }
@@ -623,7 +635,9 @@ class Kwf_SourceMaps_SourceMap
      */
     public function getMapContentsData($includeLastExtension = true)
     {
-        if ($this->_mappingsChanged) $this->_generateMappings();
+        if ($this->_mappingsChanged) {
+          $this->_generateMappings();
+        }
         if ($includeLastExtension && !isset($this->_map->{'_x_org_koala-framework_last'})) {
             $this->_addLastExtension();
         }
@@ -638,7 +652,9 @@ class Kwf_SourceMaps_SourceMap
      */
     public function save($mapFileName, $fileFileName = null)
     {
-        if ($fileFileName !== null) file_put_contents($fileFileName, $this->_fileContents);
+        if ($fileFileName !== null) {
+          file_put_contents($fileFileName, $this->_fileContents);
+        }
         file_put_contents($mapFileName, $this->getMapContents());
     }
 
