@@ -232,7 +232,7 @@ class Kwf_SourceMaps_SourceMap
         if (strpos("\n", $string)) {
             throw new Exception('string must not contain \n');
         }
-        if (strpos("\n", $replace)) {
+        if ($replace != "" && strpos("\n", $replace)) {
             throw new Exception('replace must not contain \n');
         }
 
