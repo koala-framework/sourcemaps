@@ -114,12 +114,13 @@ class Kwf_SourceMaps_SourceMap
      * @param integer $generatedColumn The column number in generated file
      * @param integer $originalLine The line number in original file
      * @param integer $originalColumn The column number in original file
-     * @param string $sourceFile The original source file
+     * @param string $originalSource The original source file
+     * @param string $originalName The original source name (optional)
      */
     public function addMapping($generatedLine, $generatedColumn, $originalLine, $originalColumn, $originalSource, $originalName = null)
     {
         if (!isset($this->_mappings)) {
-          $this->getMappings();
+            $this->getMappings();
         }
         $this->_mappings[] = array(
             'generatedLine' => $generatedLine,
@@ -225,14 +226,14 @@ class Kwf_SourceMaps_SourceMap
     public function stringReplace($string, $replace)
     {
         if ($this->_mappingsChanged) {
-          $this->_generateMappings();
+            $this->_generateMappings();
         }
 
         if (strpos("\n", $string)) {
-          throw new Exception('string must not contain \n');
+            throw new Exception('string must not contain \n');
         }
         if (strpos("\n", $replace)) {
-          throw new Exception('replace must not contain \n');
+            throw new Exception('replace must not contain \n');
         }
 
         $adjustOffsets = array();
@@ -273,7 +274,6 @@ class Kwf_SourceMaps_SourceMap
                 $value = Kwf_SourceMaps_Base64VLQ::decode($str);
                 $generatedColumn = $previousGeneratedColumn + $value;
                 $previousGeneratedColumn = $generatedColumn;
-                $newGeneratedColumn = $newPreviousGeneratedColumn + $value;
 
                 $offset = 0;
                 if (isset($adjustOffsets[$generatedLine])) {
@@ -492,8 +492,6 @@ class Kwf_SourceMaps_SourceMap
                 throw new Exception("Invalid last name, must not be higher than names");
             }
         }
-
-        $otherMappings = '';
 
         if ($data->sources) {
             foreach ($data->sources as $s) {
