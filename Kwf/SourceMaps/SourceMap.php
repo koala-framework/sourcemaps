@@ -97,7 +97,7 @@ class Kwf_SourceMaps_SourceMap
         }
         $map = base64_decode($map);
         $map = json_decode($map);
-        $fileContents = substr($fileContents, $pos);
+        $fileContents = substr($fileContents, 0, $pos);
         return new self($map, $fileContents);
     }
 
