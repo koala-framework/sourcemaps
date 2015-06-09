@@ -151,14 +151,14 @@ class Kwf_SourceMaps_SourceMap
         }
 
         $this->_map->sources = array();
-        foreach($this->_mappings as $m) {
+        foreach ($this->_mappings as $m) {
             if ($m['originalSource'] && !in_array($m['originalSource'], $this->_map->sources)) {
                 $this->_map->sources[] = $m['originalSource'];
             }
         }
 
         $this->_map->names = array();
-        foreach($this->_mappings as $m) {
+        foreach ($this->_mappings as $m) {
             if ($m['originalName'] && !in_array($m['originalName'], $this->_map->names)) {
                 $this->_map->names[] = $m['originalName'];
             }
@@ -166,22 +166,22 @@ class Kwf_SourceMaps_SourceMap
 
         // group mappings by generated line number.
         $groupedMap = $groupedMapEncoded = array();
-        foreach($this->_mappings as $m){
+        foreach ($this->_mappings as $m){
             $groupedMap[$m['generatedLine']][] = $m;
         }
         ksort($groupedMap);
 
         $lastGeneratedLine = $lastOriginalSourceIndex = $lastOriginalNameIndex = $lastOriginalLine = $lastOriginalColumn = 0;
 
-        foreach($groupedMap as $lineNumber => $lineMap) {
-            while(++$lastGeneratedLine < $lineNumber){
+        foreach ($groupedMap as $lineNumber => $lineMap) {
+            while (++$lastGeneratedLine < $lineNumber){
                 $groupedMapEncoded[] = ';';
             }
 
             $lineMapEncoded = array();
             $lastGeneratedColumn = 0;
 
-            foreach($lineMap as $m){
+            foreach ($lineMap as $m){
                 $mapEncoded = Kwf_SourceMaps_Base64VLQ::encode($m['generatedColumn'] - $lastGeneratedColumn);
                 $lastGeneratedColumn = $m['generatedColumn'];
 
