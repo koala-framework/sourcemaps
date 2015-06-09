@@ -421,10 +421,12 @@ class Kwf_SourceMaps_SourceMap
                 'originalColumn' => $previousOriginalColumn,
                 'name' => $previousName,
             );
-
+            /*
+            commented out as it might lead to false positives if the last line doesn't contain a single mapping
             if (substr_count($this->_fileContents, "\n") != $lineCount) {
                 throw new Exception("line count in mapping ($lineCount) doesn't match file (".substr_count($this->_fileContents, "\n").")");
             }
+            */
         }
     }
 
