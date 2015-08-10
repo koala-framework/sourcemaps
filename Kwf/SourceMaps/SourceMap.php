@@ -508,18 +508,21 @@ class Kwf_SourceMaps_SourceMap
 
         $str = '';
 
-        while (strlen($otherMappings) > 0 && $otherMappings[0] === ';') {
-            $str .= $otherMappings[0];
-            $otherMappings = substr($otherMappings, 1);
+        $otherMappingsEnd = strlen($otherMappings);
+        $otherMappingsPos = 0;
+
+        while ($otherMappingsPos < $otherMappingsEnd && $otherMappings[$otherMappingsPos] === ';') {
+            $str .= $otherMappings[$otherMappingsPos];
+            $otherMappingsPos++;
         }
-        if (strlen($otherMappings) > 0) {
+        if ($otherMappingsPos < $otherMappingsEnd) {
 
             // Generated column.
-            $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
-            if (strlen($otherMappings) > 0 && !($otherMappings[0] == ',' || $otherMappings[0] == ';')) {
+            $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos));
+            if ($otherMappingsPos < $otherMappingsEnd && !($otherMappings[$otherMappingsPos] == ',' || $otherMappings[$otherMappingsPos] == ';')) {
 
                 // Original source.
-                $value = Kwf_SourceMaps_Base64VLQ::decode($otherMappings);
+                $value = Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos);
                 if ($previousFileSourcesCount) {
                     $absoluteValue = $value + $previousFileSourcesCount;
                     $value = $absoluteValue - $previousFileLast->source;
@@ -527,14 +530,14 @@ class Kwf_SourceMaps_SourceMap
                 $str  .= Kwf_SourceMaps_Base64VLQ::encode($value);
 
                 // Original line.
-                $str  .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings) - $previousFileLast->originalLine);
+                $str  .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos) - $previousFileLast->originalLine);
 
                 // Original column.
-                $str  .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings) - $previousFileLast->originalColumn);
+                $str  .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos) - $previousFileLast->originalColumn);
 
                 // Original name.
-                if (strlen($otherMappings) > 0 && !($otherMappings[0] == ',' || $otherMappings[0] == ';')) {
-                    $value = Kwf_SourceMaps_Base64VLQ::decode($otherMappings);
+                if ($otherMappingsPos < $otherMappingsEnd && !($otherMappings[$otherMappingsPos] == ',' || $otherMappings[$otherMappingsPos] == ';')) {
+                    $value = Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos);
                     if ($previousFileNamesCount) {
                         $absoluteValue = $value + $previousFileNamesCount;
                         $value = $absoluteValue - $previousFileLast->name;
@@ -544,30 +547,30 @@ class Kwf_SourceMaps_SourceMap
                     //file doesn't have names at all, we don't have to adjust that offset
                 } else {
                     //loop thru mappings until we find a block with name
-                    while (strlen($otherMappings) > 0) {
-                        if ($otherMappings[0] === ';') {
-                            $str .= $otherMappings[0];
-                            $otherMappings = substr($otherMappings, 1);
-                        } else if ($otherMappings[0] === ',') {
-                            $str .= $otherMappings[0];
-                            $otherMappings = substr($otherMappings, 1);
+                    while ($otherMappingsPos < $otherMappingsEnd) {
+                        if ($otherMappings[$otherMappingsPos] === ';') {
+                            $str .= $otherMappings[$otherMappingsPos];
+                            $otherMappingsPos++;
+                        } else if ($otherMappings[$otherMappingsPos] === ',') {
+                            $str .= $otherMappings[$otherMappingsPos];
+                            $otherMappingsPos++;
                         } else {
                             // Generated column.
-                            $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
+                            $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos));
 
-                            if (strlen($otherMappings) > 0 && !($otherMappings[0] == ',' || $otherMappings[0] == ';')) {
+                            if ($otherMappingsPos < $otherMappingsEnd && !($otherMappings[$otherMappingsPos] == ',' || $otherMappings[$otherMappingsPos] == ';')) {
                                 // Original source.
-                                $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
+                                $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos));
 
                                 // Original line.
-                                $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
+                                $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos));
 
                                 // Original column.
-                                $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decode($otherMappings));
+                                $str .= Kwf_SourceMaps_Base64VLQ::encode(Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos));
 
-                                if (strlen($otherMappings) > 0 && !($otherMappings[0] == ',' || $otherMappings[0] == ';')) {
+                                if ($otherMappingsPos < $otherMappingsEnd && !($otherMappings[$otherMappingsPos] == ',' || $otherMappings[$otherMappingsPos] == ';')) {
                                     // Original name.
-                                    $value = Kwf_SourceMaps_Base64VLQ::decode($otherMappings);
+                                    $value = Kwf_SourceMaps_Base64VLQ::decodePos($otherMappings, $otherMappingsPos);
                                     if ($previousFileNamesCount) {
                                         $absoluteValue = $value + $previousFileNamesCount;
                                         $value = $absoluteValue - $previousFileLast->name;
@@ -583,7 +586,7 @@ class Kwf_SourceMaps_SourceMap
 
         }
 
-        $this->_map->mappings .= $str.$otherMappings;
+        $this->_map->mappings .= $str.substr($otherMappings, $otherMappingsPos);
 
         $this->_map->{'_x_org_koala-framework_last'} = (object) array(
             'source' => $previousFileSourcesCount + $data->{'_x_org_koala-framework_last'}->source,
