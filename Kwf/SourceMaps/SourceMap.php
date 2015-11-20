@@ -10,6 +10,7 @@ class Kwf_SourceMaps_SourceMap
     protected $_fileContents;
     protected $_mappings;
     protected $_mappingsChanged = false; //set to true if _mappings changed and _map['mappings'] is outdated
+    protected $_mimeType;
 
     /**
      * @param string contents of the source map
@@ -54,6 +55,16 @@ class Kwf_SourceMaps_SourceMap
         return $this->_map->sourceRoot;
     }
 
+    public function setMimeType($v)
+    {
+        $this->_mimeType = $v;
+    }
+
+    public function getMimeType()
+    {
+        return $this->_mimeType;
+    }
+
     /**
      * Create a new, empty sourcemap
      *
@@ -83,11 +94,24 @@ class Kwf_SourceMaps_SourceMap
         // '//# sourceMappingURL=data:application/json;charset:utf-8;base64,
         // '//# sourceMappingURL=data:application/json;base64,'
         $pos = strrpos($fileContents, "\n//# sourceMappingURL=");
+        $isCss = false;
         if ($pos === false) {
-            throw new Exception("No sourceMappingURL found");
+            $pos = strrpos($fileContents, "\n/*# sourceMappingURL=");
+            if ($pos === false) {
+                throw new Exception("No sourceMappingURL found");
+            }
+            $isCss = true;
         }
         $url = substr($fileContents, $pos + 22);
         $url = rtrim($url);
+        if ($isCss) {
+            if (substr($url, -2) != '*/') {
+                throw new Exception("sourceMappingURL isn't wrapped with closing */");
+            }
+            $url = substr($url, 0, -2); //remove "*/"
+            $url = rtrim($url);
+        }
+
         if (substr($url, 0, 29) == 'data:application/json;base64,') {
             $map = substr($url, 29);
         } else if (substr($url, 0, 29 + 14) == 'data:application/json;charset:utf-8;base64,') {
@@ -98,13 +122,19 @@ class Kwf_SourceMaps_SourceMap
         $map = base64_decode($map);
         $map = json_decode($map);
         $fileContents = substr($fileContents, 0, $pos);
-        return new self($map, $fileContents);
+        $ret = new self($map, $fileContents);
+        $ret->setMimeType($isCss ? 'text/css' : 'text/javascript');
+        return $ret;
     }
 
     public static function hasInline($fileContents)
     {
         $pos = strrpos($fileContents, "\n//# sourceMappingURL=data:");
-        return $pos !== false;
+        if ($pos !== false) return true;
+        $pos = strrpos($fileContents, "\n/*# sourceMappingURL=data:");
+        if ($pos !== false) return true;
+
+        return false;
     }
 
     /**
@@ -667,7 +697,11 @@ class Kwf_SourceMaps_SourceMap
     public function getFileContentsInlineMap($includeLastExtension = true)
     {
         $ret = $this->_fileContents;
-        $ret .= "\n//# sourceMappingURL=data:application/json;base64,".base64_encode($this->getMapContents($includeLastExtension))."\n";
+        if ($this->_mimeType == 'text/css') {
+            $ret .= "\n/*# sourceMappingURL=data:application/json;base64,".base64_encode($this->getMapContents($includeLastExtension))." */\n";
+        } else {
+            $ret .= "\n//# sourceMappingURL=data:application/json;base64,".base64_encode($this->getMapContents($includeLastExtension))."\n";
+        }
         return $ret;
     }
 }
