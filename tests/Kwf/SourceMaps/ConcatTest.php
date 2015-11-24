@@ -200,4 +200,33 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalColumn' => 5
         ));
     }
+
+    public function testWithoutMappingInLastLine()
+    {
+        $d1 = Kwf_SourceMaps_SourceMap::createEmptyMap(".kwcClass{a:red}\n");
+        $d1->addMapping(1, 0, 1, 0, 'aaa.scss');
+
+        $d2 = Kwf_SourceMaps_SourceMap::createEmptyMap('aaa');
+        $d2->addMapping(1, 0, 3, 0, 'bbb.scss');
+
+        $map = Kwf_SourceMaps_SourceMap::createEmptyMap('');
+        foreach (array($d1, $d2) as $c) {
+            $map->concat($c);
+        }
+        $mappings = $map->getMappings();
+        $this->assertEquals($mappings[0], array(
+            'generatedLine' => 1,
+            'generatedColumn' => 0,
+            'originalSource' => 'aaa.scss',
+            'originalLine' => 1,
+            'originalColumn' => 0,
+        ));
+        $this->assertEquals($mappings[1], array(
+            'generatedLine' => 2,
+            'generatedColumn' => 0,
+            'originalSource' => 'bbb.scss',
+            'originalLine' => 3,
+            'originalColumn' => 0
+        ));
+    }
 }

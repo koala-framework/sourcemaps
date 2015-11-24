@@ -482,10 +482,16 @@ class Kwf_SourceMaps_SourceMap
             $this->_addLastExtension();
         }
 
-        if (strlen($this->_fileContents) > 0 && substr($this->_fileContents, -1) != "\n") {
-            $this->_fileContents .= "\n";
-            $this->_map->mappings .= ';';
+        if (strlen($this->_fileContents) > 0) {
+            if (substr($this->_fileContents, -1) != "\n") {
+                $this->_fileContents .= "\n";
+            }
         }
+        $missingLines = substr_count($this->_fileContents, "\n")-substr_count($this->_map->mappings, ";");
+        if ($missingLines > 0) {
+            $this->_map->mappings .= str_repeat(';', $missingLines);
+        }
+
         $this->_fileContents .= $other->_fileContents;
 
         $data = $other->getMapContentsData();
