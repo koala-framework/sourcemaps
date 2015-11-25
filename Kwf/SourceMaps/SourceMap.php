@@ -478,6 +478,10 @@ class Kwf_SourceMaps_SourceMap
         if ($this->_mappingsChanged) {
           $this->_generateMappings();
         }
+        $missingLines = substr_count($this->_fileContents, "\n")-substr_count($this->_map->mappings, ";");
+        if ($missingLines > 0) {
+            $this->_map->mappings .= str_repeat(';', $missingLines);
+        }
         if (!isset($this->_map->{'_x_org_koala-framework_last'})) {
             $this->_addLastExtension();
         }
@@ -486,10 +490,6 @@ class Kwf_SourceMaps_SourceMap
             if (substr($this->_fileContents, -1) != "\n") {
                 $this->_fileContents .= "\n";
             }
-        }
-        $missingLines = substr_count($this->_fileContents, "\n")-substr_count($this->_map->mappings, ";");
-        if ($missingLines > 0) {
-            $this->_map->mappings .= str_repeat(';', $missingLines);
         }
 
         $this->_fileContents .= $other->_fileContents;
