@@ -500,6 +500,7 @@ class Kwf_SourceMaps_SourceMap
         if (strlen($this->_fileContents) > 0) {
             if (substr($this->_fileContents, -1) != "\n") {
                 $this->_fileContents .= "\n";
+                $this->_map->mappings .= ';';
             }
         }
 
