@@ -15,6 +15,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[12], array(
             'generatedLine' => 2,
@@ -22,7 +23,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
 
         $mappingsOffs = 13;
@@ -33,6 +34,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[$mappingsOffs+12], array(
             'generatedLine' => $genLineOffs+2,
@@ -40,7 +42,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
 
         $contents = $map1->getFileContents();
@@ -64,6 +66,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[12], array(
             'generatedLine' => 2,
@@ -71,7 +74,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
 
         $mappingsOffs = 13*2;
@@ -82,6 +85,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[$mappingsOffs+12], array(
             'generatedLine' => $genLineOffs+2,
@@ -89,7 +93,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
 
         $contents = $map1->getFileContents();
@@ -114,6 +118,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[12], array(
             'generatedLine' => 2,
@@ -121,7 +126,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
 
         $mappingsOffs = 13;
@@ -132,6 +137,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[$mappingsOffs+12], array(
             'generatedLine' => $genLineOffs+2,
@@ -139,7 +145,7 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
 
         $contents = $map->getFileContents();
@@ -164,13 +170,15 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one2.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[$mappingsOffs+1], array(
             'generatedLine' => $genLineOffs+1,
             'generatedColumn' => 5,
             'originalSource' => '/the/root/one2.js',
             'originalLine' => 1,
-            'originalColumn' => 5
+            'originalColumn' => 5,
+            'originalName' => null
         ));
     }
 
@@ -191,13 +199,15 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one2.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[$mappingsOffs+1], array(
             'generatedLine' => $genLineOffs+1,
             'generatedColumn' => 5,
             'originalSource' => '/the/root/one2.js',
             'originalLine' => 1,
-            'originalColumn' => 5
+            'originalColumn' => 5,
+            'originalName' => null
         ));
     }
 
@@ -220,13 +230,15 @@ class Kwf_SourceMaps_ConcatTest extends PHPUnit_Framework_TestCase
             'originalSource' => 'aaa.scss',
             'originalLine' => 1,
             'originalColumn' => 0,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[1], array(
             'generatedLine' => 2,
             'generatedColumn' => 0,
             'originalSource' => 'bbb.scss',
             'originalLine' => 3,
-            'originalColumn' => 0
+            'originalColumn' => 0,
+            'originalName' => null
         ));
     }
 }

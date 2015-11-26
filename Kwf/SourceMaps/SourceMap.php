@@ -397,8 +397,10 @@ class Kwf_SourceMaps_SourceMap
                     if ($pos < $end && !($str[$pos] == ',' || $str[$pos] == ';')) {
                         // Original name.
                         $value = Kwf_SourceMaps_Base64VLQ::decodePos($str, $pos);
-                        $mapping['name'] = $this->_map->names[$previousName + $value];
+                        $mapping['originalName'] = $this->_map->names[$previousName + $value];
                         $previousName += $value;
+                    } else {
+                        $mapping['originalName'] = null;
                     }
                 }
                 $this->_mappings[] = $mapping;

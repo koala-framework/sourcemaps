@@ -19,7 +19,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'baz'
+            'originalName' => 'baz'
         ));
         $this->assertEquals($mappings[6], array(
             'generatedLine' => 1,
@@ -27,7 +27,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 2,
             'originalColumn' => 14,
-            'name' => 'bar'
+            'originalName' => 'bar'
         ));
 
         //first of line 2
@@ -37,6 +37,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
     }
 
@@ -59,7 +60,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 2,
             'originalColumn' => 14,
-            'name' => 'bar'
+            'originalName' => 'bar'
         ));
 
 
@@ -69,6 +70,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 1,
             'originalColumn' => 1,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[8], array(
             'generatedLine' => 2,
@@ -76,6 +78,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 1,
             'originalColumn' => 5,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[9], array(
             'generatedLine' => 2,
@@ -83,6 +86,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 1,
             'originalColumn' => 11,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[10], array(
             'generatedLine' => 2,
@@ -90,7 +94,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 1,
             'originalColumn' => 21,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
         $this->assertEquals($mappings[12], array(
             'generatedLine' => 2,
@@ -98,7 +102,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
     }
 
@@ -122,7 +126,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 1,
             'originalColumn' => 21,
-            'name' => 'bar'
+            'originalName' => 'bar'
         ));
         $this->assertEquals($mappings[4], array(
             'generatedLine' => 1,
@@ -130,6 +134,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 2,
             'originalColumn' => 3,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[5], array(
             'generatedLine' => 1,
@@ -137,7 +142,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'baz'
+            'originalName' => 'baz'
         ));
         $this->assertEquals($mappings[6], array(
             'generatedLine' => 1,
@@ -145,7 +150,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/one.js',
             'originalLine' => 2,
             'originalColumn' => 14,
-            'name' => 'bar'
+            'originalName' => 'bar'
         ));
 
 
@@ -155,7 +160,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 1,
             'originalColumn' => 21,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
         $this->assertEquals($mappings[11], array(
             'generatedLine' => 2,
@@ -163,6 +168,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 2,
             'originalColumn' => 3,
+            'originalName' => null
         ));
         $this->assertEquals($mappings[12], array(
             'generatedLine' => 2,
@@ -170,7 +176,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalSource' => '/the/root/two.js',
             'originalLine' => 2,
             'originalColumn' => 10,
-            'name' => 'n'
+            'originalName' => 'n'
         ));
     }
 }
