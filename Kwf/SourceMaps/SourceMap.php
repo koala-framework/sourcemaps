@@ -55,6 +55,16 @@ class Kwf_SourceMaps_SourceMap
         return $this->_map->sourceRoot;
     }
 
+    public function addSource($source)
+    {
+        $this->_map->sources[] = $source;
+    }
+
+    public function getSources()
+    {
+        return $this->_map->sources;
+    }
+
     public function setMimeType($v)
     {
         $this->_mimeType = $v;
@@ -183,7 +193,6 @@ class Kwf_SourceMaps_SourceMap
             return '';
         }
 
-        $this->_map->sources = array();
         foreach ($this->_mappings as $m) {
             if ($m['originalSource'] && !in_array($m['originalSource'], $this->_map->sources)) {
                 $this->_map->sources[] = $m['originalSource'];
