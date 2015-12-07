@@ -60,6 +60,11 @@ class Kwf_SourceMaps_SourceMap
         $this->_map->sources[] = $source;
     }
 
+    public function setSources(array $sources)
+    {
+        $this->_map->sources = $sources;
+    }
+
     public function getSources()
     {
         return $this->_map->sources;
