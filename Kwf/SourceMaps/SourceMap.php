@@ -288,7 +288,7 @@ class Kwf_SourceMaps_SourceMap
             $this->_fileContents = substr($this->_fileContents, 0, $pos + $offset).$replace.substr($this->_fileContents, $pos + $offset + strlen($string));
             $offset += strlen($replace) - strlen($string);
             $line = substr_count(substr($str, 0, $pos), "\n") + 1;
-            $column = $pos - strrpos(substr($str, 0, $pos), "\n"); //strrpos can return false for first line which will subtract 0 (=false)
+            $column = $pos - strrpos(substr($str, 0, $pos), "\n") + 1; //strrpos can return false for first line which will subtract 0 (=false)
             $adjustOffsets[$line][] = array(
                 'column' => $column,
                 'absoluteOffset' => $offset,

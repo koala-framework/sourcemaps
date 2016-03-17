@@ -179,4 +179,25 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalName' => 'n'
         ));
     }
+
+    public function testLeaveFirstMappingUntouched()
+    {
+        $map = Kwf_SourceMaps_SourceMap::createEmptyMap('(function($,window,document,undefined){});');
+        $map->addMapping(1, 1, 1, 1, 'foo.js');
+        $map->addMapping(1, 10, 1, 11, 'foo.js', '$');
+        $map->addMapping(1, 12, 1, 14, 'foo.js', 'window');
+        $map->addMapping(1, 19, 1, 22, 'foo.js', 'document');
+        $map->addMapping(1, 28, 1, 32, 'foo.js', 'undefined');
+
+        $map->stringReplace('(function($,window,document,undefined){', "var $=jQuery=require('jQuery');");
+        $mappings = $map->getMappings();
+        $this->assertEquals($mappings[0], array(
+            'generatedLine' => 1,
+            'generatedColumn' => 1,
+            'originalSource' => 'foo.js',
+            'originalLine' => 1,
+            'originalColumn' => 1,
+            'originalName' => null
+        ));
+    }
 }
