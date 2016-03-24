@@ -23,7 +23,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
         ));
         $this->assertEquals($mappings[6], array(
             'generatedLine' => 1,
-            'generatedColumn' => 32+5,  //this neets to be shifted
+            'generatedColumn' => 32+5,  //this needs to be shifted
             'originalSource' => '/the/root/one.js',
             'originalLine' => 2,
             'originalColumn' => 14,
@@ -48,6 +48,7 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
 
              //0        1         2         3         4
              //1234567890123456789012345678901234567890123
+            // TWO.inc=function(a){return a+1;};
         $s = " ONE.foo=function(a){return baz(a);};\n".
              " TWO.increment=function(a){return a+1;};";
         $this->assertEquals($map->getFileContents(), $s);
@@ -198,6 +199,40 @@ class Kwf_SourceMaps_StringReplaceTest extends PHPUnit_Framework_TestCase
             'originalLine' => 1,
             'originalColumn' => 1,
             'originalName' => null
+        ));
+    }
+
+    public function testRemoveReplacedMapping()
+    {
+                                                       //0         1         2         3         4
+                                                       //01234567890123456789012345678901234567890123456789
+        $map = Kwf_SourceMaps_SourceMap::createEmptyMap('(function($,window,document,undefined){var x=1;});');
+        $map->addMapping(1, 1, 1, 1, 'foo.js');
+        $map->addMapping(1, 10, 1, 11, 'foo.js', '$');
+        $map->addMapping(1, 12, 1, 14, 'foo.js', 'window');
+        $map->addMapping(1, 19, 1, 22, 'foo.js', 'document');
+        $map->addMapping(1, 28, 1, 32, 'foo.js', 'undefined');
+        $map->addMapping(1, 43, 2, 5, 'foo.js', 'x');
+
+        $map->stringReplace('(function($,window,document,undefined){', "var $=jQuery=require('jQuery');");
+        $mappings = $map->getMappings();
+        $this->assertEquals(2, count($mappings));
+        $this->assertEquals($mappings[0], array(
+            'generatedLine' => 1,
+            'generatedColumn' => 1,
+            'originalSource' => 'foo.js',
+            'originalLine' => 1,
+            'originalColumn' => 1,
+            'originalName' => null
+        ));
+
+        $this->assertEquals($mappings[1], array(
+            'generatedLine' => 1,
+            'generatedColumn' => 43+31-39,
+            'originalSource' => 'foo.js',
+            'originalLine' => 2,
+            'originalColumn' => 5,
+            'originalName' => 'x'
         ));
     }
 }

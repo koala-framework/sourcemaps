@@ -284,63 +284,46 @@ class Kwf_SourceMaps_SourceMap
         $pos = 0;
         $str = $this->_fileContents;
         $offset = 0;
+        $lineOffset = 0;
         while (($pos = strpos($str, $string, $pos)) !== false) {
+            $line = substr_count(substr($str, 0, $pos), "\n") + 1;
+            if (!isset($adjustOffsets[$line])) {
+                //first in line
+                $lineOffset = 0;
+            }
             $this->_fileContents = substr($this->_fileContents, 0, $pos + $offset).$replace.substr($this->_fileContents, $pos + $offset + strlen($string));
             $offset += strlen($replace) - strlen($string);
-            $line = substr_count(substr($str, 0, $pos), "\n") + 1;
+            $lineOffset += strlen($replace) - strlen($string);
             $column = $pos - strrpos(substr($str, 0, $pos), "\n") + 1; //strrpos can return false for first line which will subtract 0 (=false)
             $adjustOffsets[$line][] = array(
                 'column' => $column,
                 'absoluteOffset' => $offset,
-                'offset' => strlen($replace) - strlen($string)
+                'lineOffset' => $lineOffset,
+                'offset' => strlen($replace) - strlen($string),
+                'replacedLength' => strlen($string)
             );
             $pos = $pos + strlen($string);
         }
-        $generatedLine = 1;
-        $previousGeneratedColumn = 0;
-        $newPreviousGeneratedColumn = 0;
 
-        $str = $this->_map->mappings;
-
-        $newMappings = '';
-        while (strlen($str) > 0) {
-            if ($str[0] === ';') {
-                $generatedLine++;
-                $newMappings .= $str[0];
-                $str = substr($str, 1);
-                $previousGeneratedColumn = 0;
-                $newPreviousGeneratedColumn = 0;
-            } else if ($str[0] === ',') {
-                $newMappings .= $str[0];
-                $str = substr($str, 1);
-            } else {
-                // Generated column.
-                $value = Kwf_SourceMaps_Base64VLQ::decode($str);
-                $generatedColumn = $previousGeneratedColumn + $value;
-                $previousGeneratedColumn = $generatedColumn;
-
-                $offset = 0;
-                if (isset($adjustOffsets[$generatedLine])) {
-                    foreach ($adjustOffsets[$generatedLine] as $col) {
-                        if ($generatedColumn > $col['column']) {
-                            $offset += $col['offset'];
+        $mappings = $this->getMappings();
+        $this->_mappingsChanged = true;
+        $this->_mappings = array();
+        foreach ($mappings as $mappingIndex=>$mapping) {
+            if (isset($adjustOffsets[$mapping['generatedLine']])) {
+                foreach (array_reverse($adjustOffsets[$mapping['generatedLine']], true) as $offsIndex=>$offs) {
+                    if ($mapping['generatedColumn'] > $offs['column']) {
+                        if ($mapping['generatedColumn'] < $offs['column']-1+$offs['replacedLength']) {
+                            //mapping inside replaced test, remove
+                            continue 2;
+                        } else {
+                            $mapping['generatedColumn'] += $offs['lineOffset'];
+                            break;
                         }
                     }
                 }
-                $generatedColumn += $offset;
-                $newMappings .= Kwf_SourceMaps_Base64VLQ::encode($generatedColumn - $newPreviousGeneratedColumn);
-                $newPreviousGeneratedColumn = $generatedColumn;
-
-                //read rest of block as it is
-                while (strlen($str) > 0 && !($str[0] == ',' || $str[0] == ';')) {
-                    $newMappings .= $str[0];
-                    $str = substr($str, 1);
-                }
             }
+            $this->_mappings[] = $mapping;
         }
-        $this->_map->mappings = $newMappings;
-        unset($this->_map->{'_x_org_koala-framework_last'}); //has to be re-calculated
-        unset($this->_mappings); //force re-parse
     }
 
     /**
