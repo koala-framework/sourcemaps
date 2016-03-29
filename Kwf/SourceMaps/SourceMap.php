@@ -327,9 +327,22 @@ class Kwf_SourceMaps_SourceMap
     }
 
     /**
+     * set/overwrite all mappings
+     *
+     * @param array $mappings must be in the same form as returned by getMappings
+     *
+     */
+    public function setMappings(array $mappings)
+    {
+        $this->_mappings = $mappings;
+        $this->_mappingsChanged = true;
+        return $this;
+    }
+
+    /**
      * Return all mappings
      *
-     * @return array with assoc array containing: generatedLine, generatedColumn, originalSource, originalLine, originalColumn, name
+     * @return array with assoc array containing: generatedLine, generatedColumn, originalSource, originalLine, originalColumn, originalName
      */
     public function getMappings()
     {
