@@ -429,37 +429,40 @@ class Kwf_SourceMaps_SourceMap
         $lineCount = 0;
 
         $str = $this->_map->mappings;
+        $end = strlen($str);
+        $pos = 0;
 
-        while (strlen($str) > 0) {
-            if ($str[0] === ';') {
-                $str = substr($str, 1);
+        while ($pos < $end) {
+
+            if ($str[$pos] === ';') {
+                $pos++;
                 $previousGeneratedColumn = 0;
                 $lineCount++;
-            } else if ($str[0] === ',') {
-                $str = substr($str, 1);
+            } else if ($str[$pos] === ',') {
+                $pos++;
             } else {
                 // Generated column.
-                $previousGeneratedColumn += Kwf_SourceMaps_Base64VLQ::decode($str);
+                $previousGeneratedColumn += Kwf_SourceMaps_Base64VLQ::decodePos($str, $pos);
 
-                if (strlen($str) > 0 && !($str[0] == ',' || $str[0] == ';')) {
+                if ($pos < $end && !($str[$pos]==',' || $str[$pos]==';')) {
                     // Original source.
-                    $previousSource += Kwf_SourceMaps_Base64VLQ::decode($str);
-                    if (strlen($str) === 0 || ($str[0] == ',' || $str[0] == ';')) {
+                    $previousSource += Kwf_SourceMaps_Base64VLQ::decodePos($str, $pos);
+                    if ($pos >= $end || ($str[$pos]==',' || $str[$pos]==';')) {
                         throw new Exception('Found a source, but no line and column');
                     }
 
                     // Original line.
-                    $previousOriginalLine += Kwf_SourceMaps_Base64VLQ::decode($str);
-                    if (strlen($str) === 0 || ($str[0] == ',' || $str[0] == ';')) {
+                    $previousOriginalLine += Kwf_SourceMaps_Base64VLQ::decodePos($str, $pos);
+                    if ($pos >= $end || ($str[$pos] == ',' || $str[$pos] == ';')) {
                         throw new Exception('Found a source and line, but no column');
                     }
 
                     // Original column.
-                    $previousOriginalColumn += Kwf_SourceMaps_Base64VLQ::decode($str);
+                    $previousOriginalColumn += Kwf_SourceMaps_Base64VLQ::decodePos($str, $pos);
 
-                    if (strlen($str) > 0 && !($str[0] == ',' || $str[0] == ';')) {
+                    if ($pos < $end && !($str[$pos] == ',' || $str[$pos] == ';')) {
                         // Original name.
-                        $previousName += Kwf_SourceMaps_Base64VLQ::decode($str);
+                        $previousName += Kwf_SourceMaps_Base64VLQ::decodePos($str, $pos);
                     }
                 }
             }
