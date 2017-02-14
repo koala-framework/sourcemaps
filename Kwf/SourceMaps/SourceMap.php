@@ -131,6 +131,8 @@ class Kwf_SourceMaps_SourceMap
             $map = substr($url, 29);
         } else if (substr($url, 0, 29 + 14) == 'data:application/json;charset:utf-8;base64,') {
             $map = substr($url, 29 + 14);
+        } else if (substr($url, 0, 29 + 14) == 'data:application/json;charset=utf-8;base64,') {
+            $map = substr($url, 29 + 14);
         } else {
             throw new Exception("Unsupported sourceMappingURL");
         }
